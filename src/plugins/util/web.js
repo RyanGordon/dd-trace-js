@@ -25,11 +25,13 @@ const web = {
     const headers = getHeadersToRecord(config)
     const validateStatus = getStatusValidator(config)
     const hooks = getHooks(config)
+    const filter = getFilter(config)
 
     return Object.assign({}, config, {
       headers,
       validateStatus,
-      hooks
+      hooks,
+      filter
     })
   },
 
@@ -129,6 +131,31 @@ const web = {
     if (req._datadog.middleware.length === 0) return req._datadog.span || null
 
     return req._datadog.middleware.slice(-1)[0].span()
+  }
+}
+
+function getFilter (uri, config) {
+  if (typeof config.filter === 'function') {
+    return config.filter
+  } else if (config.hasOwnProperty('filter')) {
+    log.error('Expected `filter` to be a function. Overriding filter property to default.')
+  }
+
+  const whitelist = config.whitelist || /.*/
+  const blacklist = config.blacklist || []
+
+  return uri => applyFilter(whitelist, uri) && !applyFilter(blacklist, uri)
+
+  function applyFilter (filter, uri) {
+    if (typeof filter === 'function') {
+      return filter(uri)
+    } else if (filter instanceof RegExp) {
+      return filter.test(uri)
+    } else if (filter instanceof Array) {
+      return filter.some(filter => applyFilter(filter, uri))
+    }
+
+    return filter === uri
   }
 }
 

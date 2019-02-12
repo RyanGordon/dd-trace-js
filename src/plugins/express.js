@@ -8,7 +8,9 @@ function createWrapMethod (tracer, config) {
   config = web.normalizeConfig(config)
 
   function ddTrace (req, res, next) {
-    web.instrument(tracer, config, req, res, 'express.request')
+    if (config.filter(req.url)) {
+      web.instrument(tracer, config, req, res, 'express.request')
+    }
 
     next()
   }
