@@ -164,21 +164,16 @@ function getStatusValidator (config) {
   return code => code < 400 || code >= 500
 }
 
-function getFilter (tracer, config) {
+function normalizeConfig (tracer, config) {
   config = Object.assign({}, config, {
     blacklist: [`${tracer._url.href}/v0.4/traces`].concat(config.blacklist || [])
   })
 
-  return web.getFilter(config)
-}
-
-function normalizeConfig (tracer, config) {
+  config = web.normalizeConfig(config)
   const validateStatus = getStatusValidator(config)
-  const filter = getFilter(tracer, config)
 
   return Object.assign({}, config, {
     validateStatus,
-    filter
   })
 }
 

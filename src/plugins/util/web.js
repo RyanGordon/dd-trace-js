@@ -134,7 +134,7 @@ const web = {
   }
 }
 
-function getFilter (uri, config) {
+function getFilter (config) {
   if (typeof config.filter === 'function') {
     return config.filter
   } else if (config.hasOwnProperty('filter')) {
